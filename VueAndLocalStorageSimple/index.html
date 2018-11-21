@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+		<title>Vue 和 localstorage 的结合使用（版本一）</title>
+		<style>
+			.main {
+				border: 3px solid antiquewhite;
+				width: 500px;
+				height: 600px;
+				margin: auto;
+			}
+
+			.top {
+				border: 2px solid aquamarine;
+				width: 450px;
+				height: 200px;
+				margin: auto;
+				margin-top: 10px;
+				text-align: center;
+			}
+
+			.content {
+				border: 4px solid aliceblue;
+				width: 450px;
+				height: 350px;
+				margin: auto;
+				margin-top: 20px;
+			}
+
+			.top input {
+				margin-top: 10px;
+				height: 25px;
+				width: 60%;
+				margin-left: 20px;
+			}
+
+			.top label {
+				display: flex;
+				margin-left: 35px;
+				height: 100px;
+			}
+
+			.top label>textarea {
+				margin-left: 20px;
+				width: 270px;
+			}
+
+			.top button {
+				margin-left: 270px;
+				background: #7FFFD4;
+				width: 65px;
+			}
+
+			.content>div div {
+				border: 3px solid #F0F8FF;
+				height: 30px;
+				margin-top: 4px;
+				padding-top: 10px;
+			}
+
+			.content>div>div a {
+				float: right;
+			}
+		</style>
+	</head>
+	<body>
+
+		<script src="js/vue.js"></script>
+		<div id="app" class="main">
+
+			<div class="top">
+				<div>
+					用户名:<input type="text" v-model="author" />
+					<p></p>
+					<label>
+						<span>评论内容:</span>
+						<textarea v-model="content"></textarea>
+					</label>
+					<p><button @click='saveData'>发布</button></p>
+				</div>
+			</div>
+
+			<div class="content">
+				<div v-for="data in datas" >
+					<div>{{data.key}}：{{data.value}} <a href @click.prevent='del(data.id)'>删除此评论</a></div>
+				</div>
+			</div>
+
+		</div>
+		<script>
+			new Vue({
+				el:"#app",
+				data:{
+					datas:[],
+					author:"",
+					content:""
+				},
+				methods:{
+					saveData(){
+						//将用户名存储到localstorage中
+						localStorage.setItem("input_author",this.author);
+						
+						if(this.author.trim() === ""){
+							return alert("小兄弟，请先输入用户名啊！！！！");
+						}
+						
+						if(this.content.trim() === ""){
+							return alert("大兄弟,你输入一下内容呗!!!!!");
+						}
+						//将用户名和对应的内容push到数组中
+						this.datas.push({
+							id:+new Date(),
+							key:this.author,
+							value:this.content
+						});
+						//更新
+						this.updateData();
+						
+					},
+					updateData(){
+						//将数组序列化成字符串存入localstorage中
+						localStorage.setItem("author_content",JSON.stringify(this.datas));
+					},
+					del(id){
+						//根据id过滤datas中的数组
+						this.datas = this.datas.filter( (c) => c.id != id );//简写
+						
+// 						this.datas= this.datas.filter(function(c){
+// 							return c.id != id;
+// 						})
+						
+						//更新数据
+						this.updateData();
+					}
+				},
+				created(){
+					//取到上一次的用户名
+					var author = localStorage.getItem("input_author");
+					if(author){
+						this.author = author;
+					}
+					//取出localstorage中的评论数据
+					var content = localStorage.getItem("author_content");
+					if(content){
+						//将存在localstorage中的数据取出,并序列化储成对象存入数组中
+						this.datas = JSON.parse(content);
+					}
+				}
+			});
+		</script>
+	</body>
+</html>
