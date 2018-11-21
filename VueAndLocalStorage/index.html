@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+		<title>Vue 和 localstorage 的结合使用</title>
+		<style>
+			.main {
+				border: 3px solid antiquewhite;
+				width: 500px;
+				height: 600px;
+				margin: auto;
+			}
+
+			.top {
+				border: 2px solid aquamarine;
+				width: 450px;
+				height: 200px;
+				margin: auto;
+				margin-top: 10px;
+				text-align: center;
+			}
+
+			.content {
+				border: 4px solid aliceblue;
+				width: 450px;
+				height: 350px;
+				margin: auto;
+				margin-top: 20px;
+			}
+
+			.top input {
+				margin-top: 10px;
+				height: 25px;
+				width: 60%;
+				margin-left: 20px;
+			}
+
+			.top label {
+				display: flex;
+				margin-left: 35px;
+				height: 100px;
+			}
+			.top label>textarea{
+				margin-left: 20px;
+				width: 270px;
+			}
+			.top button{
+				margin-left:270px ;
+				background: #7FFFD4;
+				width: 65px;
+			}
+			.content>div div{
+				border: 3px solid #F0F8FF;
+				height: 30px;
+				margin-top: 4px;
+				padding-top: 10px;
+			}
+			.content>div>div a{
+				float: right;
+			}
+		</style>
+	</head>
+	<body>
+		<!-- <script src="js/myTemplate.js"></script> -->
+		<script src="js/vue.js"></script>
+		<div id="app" class="main">
+
+			<div class="top">
+			<comment_input @passdatasave='parentsave'></comment_input>
+			</div>
+
+			<div class="content">
+				<comment_list v-bind:todo="datas" @parentdel='del' ></comment_list>
+			</div>
+
+		</div>
+		<script type="module" >
+			
+			//局部导入组件
+			import {commentInput,commentList,commentItem} from './js/myTemplate.js';
+			
+			Vue.component("comment_input",commentInput);
+			Vue.component("comment_list",commentList);
+			Vue.component("commentItem",commentItem);
+		 	var vm= new Vue({
+				el: "#app",
+				data:{
+					datas:[]
+				},
+				methods:{ 
+					parentsave(res){
+						//将广播出来的数据,存储在数组中
+						this.datas.push(res);
+						this.updateData();
+					},
+					updateData(){
+						//将数组的数据序列化成字符串,存入localstorage中
+						localStorage.setItem("data_author_comment",JSON.stringify(this.datas));
+					},
+					del(id){
+						console.log("最终的父组件:"+id);
+						//删除
+						this.datas=this.datas.filter( (c) => c.id != id );
+						//更新
+						this.updateData();
+					}
+				},
+				created(){
+					//创建的时候,读取localstorage中的数据
+					var cx = localStorage.getItem("data_author_comment");
+					if(cx){
+						this.datas = JSON.parse(cx);
+					}
+					
+				}
+			});
+		</script>
+	</body>
+</html>
